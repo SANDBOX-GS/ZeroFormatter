@@ -43,6 +43,11 @@ namespace ZeroFormatter.Segments
             }
 
             var sliceLength = originalBytes.Offset + originalBytes.Count;
+            if (sliceLength < offset)
+            {
+                return default(ArraySegment<byte>); // note:very very dangerous.
+            }
+
             return new ArraySegment<byte>(originalBytes.Array, offset, (sliceLength - offset));
         }
 
