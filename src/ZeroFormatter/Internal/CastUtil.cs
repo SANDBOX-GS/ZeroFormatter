@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !UNITY
+using System;
 using System.Linq.Expressions;
 
 namespace ZeroFormatter.Internal
@@ -34,3 +35,5 @@ namespace ZeroFormatter.Internal
         }
     }
 }
+
+#endif
