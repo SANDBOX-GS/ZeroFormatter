@@ -135,7 +135,7 @@ namespace <#= Namespace #>
 <# foreach(var p in t.Properties) { #>
 <# if (p.IsFixedSize) { #>
 <# } else if(p.IsCacheSegment) { #>
-            _<#= p.Name #> = new CacheSegment<<#= resolverName #>, <#= p.Type #>>(__tracker, ObjectSegmentHelper.GetSegment(originalBytes, <#= p.Index #>, __binaryLastIndex, __tracker));
+            _<#= p.Name #> = new CacheSegment<<#= resolverName #>, <#= p.Type #>>(__tracker, ObjectSegmentHelper.GetSegment(originalBytes, <#= p.Index #>, <#= p.Index + 1 #>, __binaryLastIndex, __tracker));
 <# } else { #>
             _<#= p.Name #> = ObjectSegmentHelper.DeserializeSegment<<#= resolverName #>, <#= p.Type #>>(originalBytes, <#= p.Index #>, __binaryLastIndex, __tracker);
 <# } #>

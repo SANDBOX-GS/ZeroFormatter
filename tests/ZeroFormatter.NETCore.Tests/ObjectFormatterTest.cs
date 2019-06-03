@@ -128,8 +128,8 @@ namespace ZeroFormatter.Tests
             this.__extraFixedBytes = ObjectSegmentHelper.CreateExtraFixedBytes(this.__binaryLastIndex, 4, new[] { 4, 4 }); // embed schemaLastIndex, elementSizeSum = should calcurate
 
             // Auto Generate Area
-            _firstName = new CacheSegment<DefaultResolver, string>(__tracker, ObjectSegmentHelper.GetSegment(originalBytes, 1, __binaryLastIndex, __tracker));
-            _lastName = new CacheSegment<DefaultResolver, string>(__tracker, ObjectSegmentHelper.GetSegment(originalBytes, 2, __binaryLastIndex, __tracker));
+            _firstName = new CacheSegment<DefaultResolver, string>(__tracker, ObjectSegmentHelper.GetSegment(originalBytes, 1, 2, __binaryLastIndex, __tracker));
+            _lastName = new CacheSegment<DefaultResolver, string>(__tracker, ObjectSegmentHelper.GetSegment(originalBytes, 2, 3, __binaryLastIndex, __tracker));
             _myList = Formatter<DefaultResolver, IList<int>>.Default.Deserialize(ref __array, ObjectSegmentHelper.GetOffset(originalBytes, 4, __binaryLastIndex, __tracker), __tracker, out __out);
 
         }
