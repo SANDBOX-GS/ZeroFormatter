@@ -121,3 +121,4 @@ nuget/*.nupkg
 nuget/zfc.exe
 nuget/zfc.exe.config
 .vs/*
+.idea/*
