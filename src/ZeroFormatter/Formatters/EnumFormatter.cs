@@ -2,6 +2,7 @@
 using System;
 using System.Reflection;
 using ZeroFormatter.Internal;
+using ZeroFormatter.Segments;
 
 namespace ZeroFormatter.Formatters
 {
