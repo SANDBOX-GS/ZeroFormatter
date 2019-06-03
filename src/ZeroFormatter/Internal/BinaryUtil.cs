@@ -578,7 +578,7 @@ namespace ZeroFormatter.Internal
             }
         }
 
-        public static unsafe int WriteDateTime(ref byte[] bytes, int offset, DateTime dateTime)
+        public static int WriteDateTime(ref byte[] bytes, int offset, DateTime dateTime)
         {
             dateTime = dateTime.ToUniversalTime();
 
@@ -586,29 +586,43 @@ namespace ZeroFormatter.Internal
             long secondsSinceBclEpoch = dateTime.Ticks / TimeSpan.TicksPerSecond;
             int nanoseconds = (int)(dateTime.Ticks % TimeSpan.TicksPerSecond) * Duration.NanosecondsPerTick;
 
-            EnsureCapacity(ref bytes, offset, 12);
-            fixed (byte* ptr = bytes)
-            {
-                *(long*)(ptr + offset) = (secondsSinceBclEpoch - Timestamp.BclSecondsAtUnixEpoch);
-                *(int*)(ptr + offset + 8) = nanoseconds;
-            }
+            int secondsOffset = WriteInt64(ref bytes, offset, (secondsSinceBclEpoch - Timestamp.BclSecondsAtUnixEpoch));
+            int nanosecondsOffset = WriteInt32(ref bytes, offset + secondsOffset, nanoseconds);
 
-            return 12;
+            return secondsOffset + nanosecondsOffset;
+
+            // EnsureCapacity(ref bytes, offset, 12);
+            // fixed (byte* ptr = bytes)
+            // {
+            //     *(long*)(ptr + offset) = (secondsSinceBclEpoch - Timestamp.BclSecondsAtUnixEpoch);
+            //     *(int*)(ptr + offset + 8) = nanoseconds;
+            // }
+            //
+            // return 12;
         }
 
-        public static unsafe DateTime ReadDateTime(ref byte[] bytes, int offset)
+        public static DateTime ReadDateTime(ref byte[] bytes, int offset)
         {
-            fixed (byte* ptr = bytes)
+            long seconds = ReadInt64(ref bytes, offset);
+            int nanos = ReadInt32(ref bytes, offset + 8);
+            
+            if (!Timestamp.IsNormalized(seconds, nanos))
             {
-                var seconds = *(long*)(ptr + offset);
-                var nanos = *(int*)(ptr + offset + 8);
-
-                if (!Timestamp.IsNormalized(seconds, nanos))
-                {
-                    throw new InvalidOperationException(string.Format(@"Timestamp contains invalid values: Seconds={0}; Nanos={1}", seconds, nanos));
-                }
-                return Timestamp.UnixEpoch.AddSeconds(seconds).AddTicks(nanos / Duration.NanosecondsPerTick);
+                throw new InvalidOperationException(string.Format(@"Timestamp contains invalid values: Seconds={0}; Nanos={1}", seconds, nanos));
             }
+            return Timestamp.UnixEpoch.AddSeconds(seconds).AddTicks(nanos / Duration.NanosecondsPerTick);
+
+            // fixed (byte* ptr = bytes)
+            // {
+            //     var seconds = *(long*)(ptr + offset);
+            //     var nanos = *(int*)(ptr + offset + 8);
+            //
+            //     if (!Timestamp.IsNormalized(seconds, nanos))
+            //     {
+            //         throw new InvalidOperationException(string.Format(@"Timestamp contains invalid values: Seconds={0}; Nanos={1}", seconds, nanos));
+            //     }
+            //     return Timestamp.UnixEpoch.AddSeconds(seconds).AddTicks(nanos / Duration.NanosecondsPerTick);
+            // }
         }
 
         internal static class Timestamp
