@@ -15,4 +15,7 @@
         <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="ZeroFormatter.Analyzer" Path="|ZeroFormatter.Analyzer|" />
         <Asset Type="Microsoft.VisualStudio.Analyzer" d:Source="Project" d:ProjectName="ZeroFormatter.Analyzer" Path="|ZeroFormatter.Analyzer|" />
     </Assets>
+    <Prerequisites>
+        <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[14.0,16.0]" />
+    </Prerequisites>
 </PackageManifest>
