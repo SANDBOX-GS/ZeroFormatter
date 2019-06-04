@@ -55,10 +55,7 @@ namespace ZeroFormatter.CodeGenerator
                 }
             }
 
-            var vsInstance = GetVisualStudioInstances();
-            MSBuildLocator.RegisterInstance(vsInstance);
-
-            //MSBuildLocator.RegisterDefaults();
+            RegisterVisualStudio();
 
             var workspace = MSBuildWorkspace.Create();
             var project = await workspace.OpenProjectAsync(csprojPath).ConfigureAwait(false);
@@ -69,7 +66,15 @@ namespace ZeroFormatter.CodeGenerator
             return compilation;
         }
 
-        private static VisualStudioInstance GetVisualStudioInstances()
+        static void RegisterVisualStudio()
+        {
+            //var vsInstance = GetVisualStudioInstances();
+            //MSBuildLocator.RegisterInstance(vsInstance);
+
+            MSBuildLocator.RegisterDefaults();
+        }
+
+        static VisualStudioInstance GetVisualStudioInstances()
         {
             var vsInstanceArray = MSBuildLocator.QueryVisualStudioInstances().ToArray();
             if (vsInstanceArray.Length == 1)
