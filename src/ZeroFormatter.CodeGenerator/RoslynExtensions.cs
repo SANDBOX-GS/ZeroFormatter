@@ -1,14 +1,14 @@
-﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.MSBuild;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Microsoft.Build.Locator;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.MSBuild;
 
 namespace ZeroFormatter.CodeGenerator
 {
@@ -20,22 +20,24 @@ namespace ZeroFormatter.CodeGenerator
             // fucking workaround of resolve reference...
             var externalReferences = new List<PortableExecutableReference>();
             {
-                var locations = new List<string>();
-                locations.Add(typeof(object).Assembly.Location); // mscorlib
-                locations.Add(typeof(System.Linq.Enumerable).Assembly.Location); // core
+                var locations = new List<string>
+                {
+                    typeof(object).Assembly.Location, // mscorlib
+                    typeof(System.Linq.Enumerable).Assembly.Location // core
+                };
 
                 var xElem = XElement.Load(csprojPath);
                 var ns = xElem.Name.Namespace;
 
                 var csProjRoot = Path.GetDirectoryName(csprojPath);
-                var framworkRoot = Path.GetDirectoryName(typeof(object).Assembly.Location);
+                var frameworkRoot = Path.GetDirectoryName(typeof(object).Assembly.Location);
 
                 foreach (var item in xElem.Descendants(ns + "Reference"))
                 {
                     var hintPath = item.Element(ns + "HintPath")?.Value;
                     if (hintPath == null)
                     {
-                        var path = Path.Combine(framworkRoot, item.Attribute("Include").Value + ".dll");
+                        var path = Path.Combine(frameworkRoot, item.Attribute("Include").Value + ".dll");
                         locations.Add(path);
                     }
                     else
@@ -53,6 +55,11 @@ namespace ZeroFormatter.CodeGenerator
                 }
             }
 
+            var vsInstance = GetVisualStudioInstances();
+            MSBuildLocator.RegisterInstance(vsInstance);
+
+            //MSBuildLocator.RegisterDefaults();
+
             var workspace = MSBuildWorkspace.Create();
             var project = await workspace.OpenProjectAsync(csprojPath).ConfigureAwait(false);
             project = project.AddMetadataReferences(externalReferences); // workaround:)
@@ -60,6 +67,28 @@ namespace ZeroFormatter.CodeGenerator
 
             var compilation = await project.GetCompilationAsync().ConfigureAwait(false);
             return compilation;
+        }
+
+        private static VisualStudioInstance GetVisualStudioInstances()
+        {
+            var vsInstanceArray = MSBuildLocator.QueryVisualStudioInstances().ToArray();
+            if (vsInstanceArray.Length == 1)
+                return vsInstanceArray[0];
+
+            var index = 0;
+            foreach (var vsInstance in vsInstanceArray)
+            {
+                Console.WriteLine($"Instance [Index: {index}]");
+                Console.WriteLine($"\tName: {vsInstance.Name}");
+                Console.WriteLine($"\tVersion: {vsInstance.Version}");
+                Console.WriteLine($"\tMSBuildPath: {vsInstance.MSBuildPath}");
+                index++;
+            }
+            Console.WriteLine("Select Index?:");
+
+            var inputIndex = Console.ReadLine();
+            var parseResult = int.TryParse(inputIndex, out index);
+            return parseResult ? vsInstanceArray[index] : null;
         }
 
         public static IEnumerable<INamedTypeSymbol> GetNamedTypeSymbols(this Compilation compilation)
@@ -122,7 +151,7 @@ namespace ZeroFormatter.CodeGenerator
         {
             return typeDeclaration.AttributeLists
                 .SelectMany(x => x.Attributes)
-                .Where(x => model.GetTypeInfo(x).Type?.ToDisplayString() == typeName)
+                .Where(x => ModelExtensions.GetTypeInfo(model, x).Type?.ToDisplayString() == typeName)
                 .FirstOrDefault();
         }
 
