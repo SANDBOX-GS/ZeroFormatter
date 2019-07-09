@@ -23,11 +23,12 @@ namespace ZeroFormatter.Internal
             }
         }
 
+        const short Length_1K = 1024;
         public static void EnsureCapacity(ref byte[] bytes, int offset, int appendLength)
         {
             var newLength = offset + appendLength;
 
-            // If null(most case fisrt time) fill byte.
+            // If null (most case: first time) fill byte.
             if (bytes == null)
             {
                 bytes = new byte[newLength];
@@ -38,39 +39,39 @@ namespace ZeroFormatter.Internal
             var current = bytes.Length;
             if (newLength > current)
             {
-                int num = newLength;
-                if (num < 256)
+                var resizedLength = newLength;
+                if (resizedLength < Length_1K)
                 {
-                    num = 256;
-                    FastResize(ref bytes, num);
-                    return;
+                    resizedLength = Length_1K;
                 }
-                if (num < current * 2)
+                else if (resizedLength < current * 2)
                 {
-                    num = current * 2;
+                    resizedLength = current * 2;
                 }
 
-                FastResize(ref bytes, num);
+                FastResize(ref bytes, resizedLength);
             }
         }
 
         // Buffer.BlockCopy version of Array.Resize
         public static void FastResize(ref byte[] array, int newSize)
         {
-            if (newSize < 0) throw new ArgumentOutOfRangeException("newSize");
+            if (newSize < 0)
+                throw new ArgumentOutOfRangeException("newSize");
 
-            byte[] array2 = array;
-            if (array2 == null)
+            if (array == null)
             {
                 array = new byte[newSize];
                 return;
             }
 
-            if (array2.Length != newSize)
+            byte[] originArray = array;
+            if (originArray.Length != newSize)
             {
-                byte[] array3 = new byte[newSize];
-                Buffer.BlockCopy(array2, 0, array3, 0, (array2.Length > newSize) ? newSize : array2.Length);
-                array = array3;
+                byte[] newArray = new byte[newSize];
+                Buffer.BlockCopy(originArray, 0, newArray, 0, (originArray.Length > newSize) ? newSize : originArray.Length);
+
+                array = newArray;
             }
         }
 
