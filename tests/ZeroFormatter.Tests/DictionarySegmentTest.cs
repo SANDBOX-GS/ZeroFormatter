@@ -11,6 +11,8 @@ using ZeroFormatter.Segments;
 
 namespace ZeroFormatter.Tests
 {
+    #if !UNITY
+
     [TestClass]
     public class DictionarySegmentTest
     {
@@ -156,6 +158,8 @@ namespace ZeroFormatter.Tests
             (moreSerialize as IZeroFormatterSegment).CanDirectCopy().IsTrue();
         }
     }
+
+    #endif
 
     public class HashCollision
     {
