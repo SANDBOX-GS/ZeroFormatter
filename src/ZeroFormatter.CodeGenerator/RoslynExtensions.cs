@@ -57,6 +57,11 @@ namespace ZeroFormatter.CodeGenerator
 
             RegisterVisualStudio();
 
+            Console.WriteLine();
+            Console.WriteLine($"Project Path: {csprojPath}");
+            Console.WriteLine($"- {csprojPath = Path.GetFullPath(csprojPath)}");
+            Console.WriteLine();
+
             var workspace = MSBuildWorkspace.Create();
             var project = await workspace.OpenProjectAsync(csprojPath).ConfigureAwait(false);
             project = project.AddMetadataReferences(externalReferences); // workaround:)
@@ -77,22 +82,25 @@ namespace ZeroFormatter.CodeGenerator
         static VisualStudioInstance GetVisualStudioInstances()
         {
             var vsInstanceArray = MSBuildLocator.QueryVisualStudioInstances().ToArray();
-            if (vsInstanceArray.Length == 1)
-                return vsInstanceArray[0];
 
             var index = 0;
             foreach (var vsInstance in vsInstanceArray)
             {
+                Console.WriteLine();
                 Console.WriteLine($"Instance [Index: {index}]");
                 Console.WriteLine($"\tName: {vsInstance.Name}");
                 Console.WriteLine($"\tVersion: {vsInstance.Version}");
                 Console.WriteLine($"\tMSBuildPath: {vsInstance.MSBuildPath}");
                 index++;
             }
-            Console.WriteLine("Select Index?:");
 
+            if (vsInstanceArray.Length == 1)
+                return vsInstanceArray[0];
+
+            Console.WriteLine("Select Index?:");
             var inputIndex = Console.ReadLine();
             var parseResult = int.TryParse(inputIndex, out index);
+
             return parseResult ? vsInstanceArray[index] : null;
         }
 
