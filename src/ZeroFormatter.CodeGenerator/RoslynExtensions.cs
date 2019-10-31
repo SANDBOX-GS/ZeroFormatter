@@ -68,10 +68,10 @@ namespace ZeroFormatter.CodeGenerator
 
         static void RegisterVisualStudio()
         {
-            //var vsInstance = GetVisualStudioInstances();
-            //MSBuildLocator.RegisterInstance(vsInstance);
+            var vsInstance = GetVisualStudioInstances();
+            MSBuildLocator.RegisterInstance(vsInstance);
 
-            MSBuildLocator.RegisterDefaults();
+            //MSBuildLocator.RegisterDefaults();
         }
 
         static VisualStudioInstance GetVisualStudioInstances()
