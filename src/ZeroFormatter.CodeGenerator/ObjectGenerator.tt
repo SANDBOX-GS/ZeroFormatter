@@ -132,10 +132,12 @@ namespace <#= Namespace #>
 
             this.__extraFixedBytes = ObjectSegmentHelper.CreateExtraFixedBytes(this.__binaryLastIndex, <#= t.LastIndex #>, __elementSizes);
 
-<# foreach(var p in t.Properties) { #>
+<# for (var i = 0; i < t.Properties.Length; i++) { #>
+<# var p = t.Properties[i]; #>
 <# if (p.IsFixedSize) { #>
 <# } else if(p.IsCacheSegment) { #>
-            _<#= p.Name #> = new CacheSegment<<#= resolverName #>, <#= p.Type #>>(__tracker, ObjectSegmentHelper.GetSegment(originalBytes, <#= p.Index #>, __binaryLastIndex, __tracker));
+<# var nextIndex = i + 1 < t.Properties.Length ? t.Properties[i + 1].Index : -1; #>
+            _<#= p.Name #> = new CacheSegment<<#= resolverName #>, <#= p.Type #>>(__tracker, ObjectSegmentHelper.GetSegment(originalBytes, <#= p.Index #>, <#= nextIndex #>, __binaryLastIndex, __tracker));
 <# } else { #>
             _<#= p.Name #> = ObjectSegmentHelper.DeserializeSegment<<#= resolverName #>, <#= p.Type #>>(originalBytes, <#= p.Index #>, __binaryLastIndex, __tracker);
 <# } #>

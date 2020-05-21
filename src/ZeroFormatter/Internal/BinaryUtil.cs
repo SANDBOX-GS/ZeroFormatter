@@ -23,11 +23,12 @@ namespace ZeroFormatter.Internal
             }
         }
 
+        const short Length_1K = 1024;
         public static void EnsureCapacity(ref byte[] bytes, int offset, int appendLength)
         {
             var newLength = offset + appendLength;
 
-            // If null(most case fisrt time) fill byte.
+            // If null (most case: first time) fill byte.
             if (bytes == null)
             {
                 bytes = new byte[newLength];
@@ -38,39 +39,39 @@ namespace ZeroFormatter.Internal
             var current = bytes.Length;
             if (newLength > current)
             {
-                int num = newLength;
-                if (num < 256)
+                var resizedLength = newLength;
+                if (resizedLength < Length_1K)
                 {
-                    num = 256;
-                    FastResize(ref bytes, num);
-                    return;
+                    resizedLength = Length_1K;
                 }
-                if (num < current * 2)
+                else if (resizedLength < current * 2)
                 {
-                    num = current * 2;
+                    resizedLength = current * 2;
                 }
 
-                FastResize(ref bytes, num);
+                FastResize(ref bytes, resizedLength);
             }
         }
 
         // Buffer.BlockCopy version of Array.Resize
         public static void FastResize(ref byte[] array, int newSize)
         {
-            if (newSize < 0) throw new ArgumentOutOfRangeException("newSize");
+            if (newSize < 0)
+                throw new ArgumentOutOfRangeException("newSize");
 
-            byte[] array2 = array;
-            if (array2 == null)
+            if (array == null)
             {
                 array = new byte[newSize];
                 return;
             }
 
-            if (array2.Length != newSize)
+            byte[] originArray = array;
+            if (originArray.Length != newSize)
             {
-                byte[] array3 = new byte[newSize];
-                Buffer.BlockCopy(array2, 0, array3, 0, (array2.Length > newSize) ? newSize : array2.Length);
-                array = array3;
+                byte[] newArray = new byte[newSize];
+                Buffer.BlockCopy(originArray, 0, newArray, 0, (originArray.Length > newSize) ? newSize : originArray.Length);
+
+                array = newArray;
             }
         }
 
@@ -580,53 +581,68 @@ namespace ZeroFormatter.Internal
 
         public static unsafe int WriteDateTime(ref byte[] bytes, int offset, DateTime dateTime)
         {
-            dateTime = dateTime.ToUniversalTime();
-
-            // Do the arithmetic using DateTime.Ticks, which is always non-negative, making things simpler.
-            long secondsSinceBclEpoch = dateTime.Ticks / TimeSpan.TicksPerSecond;
-            int nanoseconds = (int)(dateTime.Ticks % TimeSpan.TicksPerSecond) * Duration.NanosecondsPerTick;
-
-            EnsureCapacity(ref bytes, offset, 12);
+            EnsureCapacity(ref bytes, offset, 8);
             fixed (byte* ptr = bytes)
             {
-                *(long*)(ptr + offset) = (secondsSinceBclEpoch - Timestamp.BclSecondsAtUnixEpoch);
-                *(int*)(ptr + offset + 8) = nanoseconds;
+                *(long*)(ptr + offset) = (dateTime.Ticks);
             }
 
-            return 12;
+            return 8;
+
+            // dateTime = dateTime.ToUniversalTime();
+            //
+            // // Do the arithmetic using DateTime.Ticks, which is always non-negative, making things simpler.
+            // long secondsSinceBclEpoch = dateTime.Ticks / TimeSpan.TicksPerSecond;
+            // int nanoseconds = (int)(dateTime.Ticks % TimeSpan.TicksPerSecond) * Duration.NanosecondsPerTick;
+            //
+            // EnsureCapacity(ref bytes, offset, 12);
+            // fixed (byte* ptr = bytes)
+            // {
+            //     *(long*)(ptr + offset) = (secondsSinceBclEpoch - Timestamp.BclSecondsAtUnixEpoch);
+            //     *(int*)(ptr + offset + 8) = nanoseconds;
+            // }
+            //
+            // return 12;
         }
 
         public static unsafe DateTime ReadDateTime(ref byte[] bytes, int offset)
         {
             fixed (byte* ptr = bytes)
             {
-                var seconds = *(long*)(ptr + offset);
-                var nanos = *(int*)(ptr + offset + 8);
+                var ticks = *(long*)(ptr + offset);
 
-                if (!Timestamp.IsNormalized(seconds, nanos))
-                {
-                    throw new InvalidOperationException(string.Format(@"Timestamp contains invalid values: Seconds={0}; Nanos={1}", seconds, nanos));
-                }
-                return Timestamp.UnixEpoch.AddSeconds(seconds).AddTicks(nanos / Duration.NanosecondsPerTick);
+                return new DateTime(ticks);
             }
+
+            // fixed (byte* ptr = bytes)
+            // {
+            //     var seconds = *(long*)(ptr + offset);
+            //     var nanos = *(int*)(ptr + offset + 8);
+            //
+            //     if (!Timestamp.IsNormalized(seconds, nanos))
+            //     {
+            //         throw new InvalidOperationException(string.Format(@"Timestamp contains invalid values: Seconds={0}; Nanos={1}", seconds, nanos));
+            //     }
+            //     return Timestamp.UnixEpoch.AddSeconds(seconds).AddTicks(nanos / Duration.NanosecondsPerTick);
+            // }
         }
 
-        internal static class Timestamp
-        {
-            internal static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-            internal const long BclSecondsAtUnixEpoch = 62135596800;
-            internal const long UnixSecondsAtBclMaxValue = 253402300799;
-            internal const long UnixSecondsAtBclMinValue = -BclSecondsAtUnixEpoch;
-            internal const int MaxNanos = Duration.NanosecondsPerSecond - 1;
-
-            internal static bool IsNormalized(long seconds, int nanoseconds)
-            {
-                return nanoseconds >= 0 &&
-                    nanoseconds <= MaxNanos &&
-                    seconds >= UnixSecondsAtBclMinValue &&
-                    seconds <= UnixSecondsAtBclMaxValue;
-            }
-        }
+        // internal static class Timestamp
+        // {
+        //     internal static readonly DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        //     internal const long BclSecondsAtUnixEpoch = 62135596800;
+        //     internal const long UnixSecondsAtBclMaxValue = 253402300799;
+        //     internal const long UnixSecondsAtBclMinValue = -BclSecondsAtUnixEpoch;
+        //     internal const int MaxNanos = Duration.NanosecondsPerSecond - 1;
+        //
+        //     internal static bool IsNormalized(long seconds, int nanoseconds)
+        //     {
+        //         return nanoseconds >= 0 &&
+        //             nanoseconds <= MaxNanos &&
+        //             seconds >= UnixSecondsAtBclMinValue &&
+        //             seconds <= UnixSecondsAtBclMaxValue;
+        //     }
+        // }
 
         internal static class Duration
         {

@@ -1,4 +1,6 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿#if !UNITY
+
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sandbox.Shared.Foo;
 using System;
 using System.Collections.Generic;
@@ -62,3 +64,5 @@ namespace ZeroFormatter.Tests
         }
     }
 }
+
+#endif

@@ -12,22 +12,22 @@ namespace ZeroFormatter.Tests
     [TestClass]
     public class SequenceFormatterTest
     {
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethod]
+        [TestMethod]
         public void PrimitiveArrayFormatter()
         {
             /*
-        Tuple.Create(typeof(Int16), 2),
-        Tuple.Create(typeof(Int32), 4),
-        Tuple.Create(typeof(Int64), 8),
-        Tuple.Create(typeof(UInt16), 2),
-        Tuple.Create(typeof(UInt32), 4),
-        Tuple.Create(typeof(UInt64), 8),
-        Tuple.Create(typeof(Single), 4),
-        Tuple.Create(typeof(Double), 8),
-        Tuple.Create(typeof(bool), 1),
-        Tuple.Create(typeof(byte), 1),
-        Tuple.Create(typeof(sbyte), 1),
-        Tuple.Create(typeof(char), 2),
+            Tuple.Create(typeof(Int16), 2),
+            Tuple.Create(typeof(Int32), 4),
+            Tuple.Create(typeof(Int64), 8),
+            Tuple.Create(typeof(UInt16), 2),
+            Tuple.Create(typeof(UInt32), 4),
+            Tuple.Create(typeof(UInt64), 8),
+            Tuple.Create(typeof(Single), 4),
+            Tuple.Create(typeof(Double), 8),
+            Tuple.Create(typeof(bool), 1),
+            Tuple.Create(typeof(byte), 1),
+            Tuple.Create(typeof(sbyte), 1),
+            Tuple.Create(typeof(char), 2),
             */
 
             ZeroFormatterSerializer.Convert(new Int16[] { 1, 2, 3, short.MinValue, short.MaxValue }).Is((short)1, (short)2, (short)3, short.MinValue, short.MaxValue);
@@ -110,12 +110,17 @@ namespace ZeroFormatter.Tests
                 InterafceDictionaryFormat = new Dictionary<int, int> { { 1, 100 }, { -4, 9999 } },
                 InterfaceCollectionFormat = new[] { 1, 10, 1000 },
                 InterfaceEnumerableFormat = new[] { 1, 2, 3 },
-                InterfaceReadOnlyCollectionFormat = new[] { 5, 6, 7 },
-                InterfaceSetFormat = new HashSet<int>(new[] { 1, 9099, 3452 }),
                 ReadOnlyCollectionFormat = new System.Collections.ObjectModel.ReadOnlyCollection<int>(new[] { 1, 10, 100 }),
+                LookupFormat = Enumerable.Range(1, 5).ToLookup(x => x % 2 == 0),
+
+                #if !UNITY
+
+                InterfaceSetFormat = new HashSet<int>(new[] { 1, 9099, 3452 }),
+                InterfaceReadOnlyCollectionFormat = new[] { 5, 6, 7 },
                 ReadOnlyDictionaryFormat = new System.Collections.ObjectModel.ReadOnlyDictionary<int, int>(new Dictionary<int, int> { { 9, 9999 } }),
                 InterfaceReadOnlyDictionaryFormat = new System.Collections.ObjectModel.ReadOnlyDictionary<int, int>(new Dictionary<int, int> { { 9, 9999 } }),
-                LookupFormat = Enumerable.Range(1, 5).ToLookup(x => x % 2 == 0)
+
+                #endif
             };
 
             var converted = ZeroFormatterSerializer.Convert(baseObject, true);
@@ -129,12 +134,17 @@ namespace ZeroFormatter.Tests
             converted.InterfaceCollectionFormat.Is(1, 10, 1000);
             converted.InterfaceEnumerableFormat.Is(1, 2, 3);
             converted.ReadOnlyCollectionFormat.Is(1, 10, 100);
-            converted.InterfaceSetFormat.OrderBy(x => x).Is(1, 3452, 9099);
-            converted.ReadOnlyCollectionFormat.Is(1, 10, 100);
-            converted.ReadOnlyDictionaryFormat[9].Is(9999);
-            converted.InterfaceReadOnlyDictionaryFormat[9].Is(9999);
             converted.LookupFormat[true].Is(2, 4);
             converted.LookupFormat[false].Is(1, 3, 5);
+
+            #if !UNITY
+
+            converted.InterfaceSetFormat.OrderBy(x => x).Is(1, 3452, 9099);
+            converted.InterfaceReadOnlyCollectionFormat.Is(1, 10, 100);
+            converted.ReadOnlyDictionaryFormat[9].Is(9999);
+            converted.InterfaceReadOnlyDictionaryFormat[9].Is(9999);
+
+            #endif
         }
     }
 }

@@ -244,7 +244,7 @@ namespace ZeroFormatter.Comparers
         {
             long ticks = timeSpan.Ticks;
             long seconds = ticks / TimeSpan.TicksPerSecond;
-            int nanos = (int)(ticks % TimeSpan.TicksPerSecond) * Internal.BinaryUtil.Duration.NanosecondsPerTick;
+            int nanos = (int)(ticks % TimeSpan.TicksPerSecond) * BinaryUtil.Duration.NanosecondsPerTick;
 
             var h0 = (int)seconds ^ (int)(seconds >> 32);
             h0 = (h0 << 5) + h0 ^ nanos;
@@ -252,7 +252,7 @@ namespace ZeroFormatter.Comparers
         }
     }
 
-    internal class DeteTimeEqualityComparer : IEqualityComparer<DateTime>
+    internal class DateTimeEqualityComparer : IEqualityComparer<DateTime>
     {
         public bool Equals(DateTime x, DateTime y)
         {
@@ -261,19 +261,30 @@ namespace ZeroFormatter.Comparers
 
         public int GetHashCode(DateTime dateTime)
         {
-            dateTime = dateTime.ToUniversalTime();
-
-            long secondsSinceBclEpoch = dateTime.Ticks / TimeSpan.TicksPerSecond;
-            long seconds = secondsSinceBclEpoch - BinaryUtil.Timestamp.BclSecondsAtUnixEpoch;
-            int nanoseconds = (int)(dateTime.Ticks % TimeSpan.TicksPerSecond) * BinaryUtil.Duration.NanosecondsPerTick;
+            long ticks = dateTime.Ticks;
+            long seconds = ticks / TimeSpan.TicksPerSecond;
+            int nanos = (int)(ticks % TimeSpan.TicksPerSecond) * BinaryUtil.Duration.NanosecondsPerTick;
 
             var h0 = (int)seconds ^ (int)(seconds >> 32);
-            h0 = (h0 << 5) + h0 ^ nanoseconds;
+            h0 = (h0 << 5) + h0 ^ nanos;
             return h0;
         }
+
+        // public int GetHashCode(DateTime dateTime)
+        // {
+        //     dateTime = dateTime.ToUniversalTime();
+        //
+        //     long secondsSinceBclEpoch = dateTime.Ticks / TimeSpan.TicksPerSecond;
+        //     long seconds = secondsSinceBclEpoch - BinaryUtil.Timestamp.BclSecondsAtUnixEpoch;
+        //     int nanoseconds = (int)(dateTime.Ticks % TimeSpan.TicksPerSecond) * BinaryUtil.Duration.NanosecondsPerTick;
+        //
+        //     var h0 = (int)seconds ^ (int)(seconds >> 32);
+        //     h0 = (h0 << 5) + h0 ^ nanoseconds;
+        //     return h0;
+        // }
     }
 
-    internal class DeteTimeOffsetEqualityComparer : IEqualityComparer<DateTimeOffset>
+    internal class DateTimeOffsetEqualityComparer : IEqualityComparer<DateTimeOffset>
     {
         public bool Equals(DateTimeOffset x, DateTimeOffset y)
         {
@@ -283,15 +294,21 @@ namespace ZeroFormatter.Comparers
         public int GetHashCode(DateTimeOffset dateTime)
         {
             dateTime = dateTime.UtcDateTime;
-
-            long secondsSinceBclEpoch = dateTime.Ticks / TimeSpan.TicksPerSecond;
-            long seconds = secondsSinceBclEpoch - BinaryUtil.Timestamp.BclSecondsAtUnixEpoch;
-            int nanoseconds = (int)(dateTime.Ticks % TimeSpan.TicksPerSecond) * BinaryUtil.Duration.NanosecondsPerTick;
-
-            var h0 = (int)seconds ^ (int)(seconds >> 32);
-            h0 = (h0 << 5) + h0 ^ nanoseconds;
-            return h0;
+            return dateTime.GetHashCode();
         }
+
+        // public int GetHashCode(DateTimeOffset dateTime)
+        // {
+        //     dateTime = dateTime.UtcDateTime;
+        //
+        //     long secondsSinceBclEpoch = dateTime.Ticks / TimeSpan.TicksPerSecond;
+        //     long seconds = secondsSinceBclEpoch - BinaryUtil.Timestamp.BclSecondsAtUnixEpoch;
+        //     int nanoseconds = (int)(dateTime.Ticks % TimeSpan.TicksPerSecond) * BinaryUtil.Duration.NanosecondsPerTick;
+        //
+        //     var h0 = (int)seconds ^ (int)(seconds >> 32);
+        //     h0 = (h0 << 5) + h0 ^ nanoseconds;
+        //     return h0;
+        // }
     }
 
     internal class StringEqualityComparer : IEqualityComparer<string>

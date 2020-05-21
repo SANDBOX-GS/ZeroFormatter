@@ -76,8 +76,8 @@ namespace ZeroFormatter.Comparers
              || comparer is DecimalEqualityComparer
              || comparer is GuidEqualityComparer
              || comparer is TimeSpanEqualityComparer
-             || comparer is DeteTimeEqualityComparer
-             || comparer is DeteTimeOffsetEqualityComparer
+             || comparer is DateTimeEqualityComparer
+             || comparer is DateTimeOffsetEqualityComparer
              || comparer is IErrorEqualityComparer)
             {
                 return true;
@@ -153,11 +153,11 @@ namespace ZeroFormatter.Comparers
             }
             else if (t == typeof(DateTime))
             {
-                comparer = new DeteTimeEqualityComparer();
+                comparer = new DateTimeEqualityComparer();
             }
             else if (t == typeof(DateTimeOffset))
             {
-                comparer = new DeteTimeOffsetEqualityComparer();
+                comparer = new DateTimeOffsetEqualityComparer();
             }
             else if (t == typeof(decimal))
             {

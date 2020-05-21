@@ -1,4 +1,6 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿#if !UNITY
+
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace ZeroFormatter.Tests
 {
-    [Microsoft.VisualStudio.TestTools.UnitTesting.TestClass]
+    [TestClass]
     public class NonGenericTest
     {
         [TestMethod]
@@ -64,3 +66,5 @@ namespace ZeroFormatter.Tests
         }
     }
 }
+
+#endif
