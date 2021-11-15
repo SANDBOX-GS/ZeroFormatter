@@ -111,7 +111,7 @@ namespace ZeroFormatter.CodeGenerator
         public int? GetLength()
         {
             if (Properties.Length == 0) return 0;
-            
+
             var sum = 0;
             foreach (var item in Properties)
             {
@@ -160,6 +160,7 @@ namespace ZeroFormatter.CodeGenerator
     public enum GenericTypeKind
     {
         KeyTuple,
+        KeyValuePair,
         List,
         ReadOnlyList,
         Dictionary,
@@ -172,6 +173,5 @@ namespace ZeroFormatter.CodeGenerator
         InterfaceCollection,
         Enumerable,
         ReadOnlyCollection,
-        KeyValuePair
     }
 }

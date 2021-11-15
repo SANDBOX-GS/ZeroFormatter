@@ -159,7 +159,7 @@ namespace ZeroFormatter.CodeGenerator
 
 
 
-            genericTypes = genericTypeContainer.Distinct().OrderBy(x => x).ToArray();
+            genericTypes = genericTypeContainer.Distinct().OrderBy(x => x.TypeKind).ToArray();
         }
 
         void CollectEnum(INamedTypeSymbol symbol, bool includeNullable, bool asKey)
@@ -695,6 +695,3 @@ namespace ZeroFormatter.CodeGenerator
         }
     }
 }
-
-
-
